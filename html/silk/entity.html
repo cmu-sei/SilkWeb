@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+.link {
+  fill: none;
+  stroke: #666;
+  stroke-width: 2.5px;
+}
+
+#outgoing {
+  fill: green;
+}
+
+.link.outgoing {
+  stroke: green;
+}
+
+.link.resolved {
+  stroke-dasharray: 0,2 1;
+}
+
+circle {
+  fill: #ccc;
+  stroke: #333;
+  stroke-width: 2.5px;
+}
+circle.targetincoming {
+    fill: red;
+    stroke: #333;
+    stroke-width: 2.9px;
+}
+circle.targetout {
+    fill: #eef300;
+    stroke: #333;
+    stroke-width: 3.5px;
+}
+/*
+circle.sourceincoming {
+    fill: #eef300;
+    stroke: #333;
+    stroke-width: 2.9px;
+}
+*/
+text {
+  font: 0.5em sans-serif;
+  pointer-events: none;
+  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+}
+
+text.source {
+    font: 0.7em sans-serif;
+    pointer-events: none;
+    text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+}
+text.target{
+    font: 0.8em sans-serif;
+    pointer-events: none;
+    text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+}
+
+</style>
+<body>
+<script src="d3.min.js"></script>
+<script>
+
+var dynamic={"gdata": [{"sip/16": "31.13.0.0/16", "packets": 2709, "bytes": 70707028, "records": 2709, "rowid": 1, "dip": "192.168.5.105"}, {"sip/16": "54.192.0.0/16", "packets": 5, "bytes": 68417299, "records": 5, "rowid": 2, "dip": "192.168.5.55"}, {"sip/16": "31.13.0.0/16", "packets": 553, "bytes": 64055480, "records": 553, "rowid": 3, "dip": "192.168.5.108"}, {"sip/16": "52.84.0.0/16", "packets": 4, "bytes": 60874383, "records": 4, "rowid": 4, "dip": "192.168.5.61"}, {"sip/16": "17.253.0.0/16", "packets": 5, "bytes": 52174731, "records": 5, "rowid": 5, "dip": "192.168.5.50"}, {"sip/16": "184.25.0.0/16", "packets": 9, "bytes": 47872608, "records": 9, "rowid": 6, "dip": "192.168.5.55"}, {"sip/16": "17.253.0.0/16", "packets": 6, "bytes": 47767576, "records": 6, "rowid": 7, "dip": "192.168.5.67"}, {"sip/16": "173.194.0.0/16", "packets": 61, "bytes": 46995677, "records": 61, "rowid": 8, "dip": "192.168.5.78"}, {"sip/16": "204.237.0.0/16", "packets": 1, "bytes": 40390070, "records": 1, "rowid": 9, "dip": "192.168.5.113"}, {"sip/16": "31.13.0.0/16", "packets": 262, "bytes": 34841739, "records": 262, "rowid": 10, "dip": "192.168.5.103"}, {"sip/16": "74.125.0.0/16", "packets": 48, "bytes": 33179801, "records": 48, "rowid": 11, "dip": "192.168.5.78"}, {"sip/16": "54.231.0.0/16", "packets": 15, "bytes": 28255018, "records": 15, "rowid": 12, "dip": "192.168.5.57"}, {"sip/16": "204.84.0.0/16", "packets": 1, "bytes": 27948629, "records": 1, "rowid": 13, "dip": "192.168.5.98"}, {"sip/16": "54.230.0.0/16", "packets": 1, "bytes": 27662546, "records": 1, "rowid": 14, "dip": "192.168.5.69"}, {"sip/16": "174.136.0.0/16", "packets": 6, "bytes": 26999076, "records": 6, "rowid": 15, "dip": "192.168.5.98"}, {"sip/16": "54.230.0.0/16", "packets": 1, "bytes": 26046692, "records": 1, "rowid": 16, "dip": "192.168.5.61"}, {"sip/16": "31.13.0.0/16", "packets": 66, "bytes": 21848777, "records": 66, "rowid": 17, "dip": "192.168.5.110"}, {"sip/16": "68.142.0.0/16", "packets": 17, "bytes": 19061750, "records": 17, "rowid": 18, "dip": "192.168.5.103"}, {"sip/16": "31.13.0.0/16", "packets": 170, "bytes": 17401492, "records": 170, "rowid": 19, "dip": "192.168.5.100"}, {"sip/16": "216.58.0.0/16", "packets": 487, "bytes": 17383051, "records": 487, "rowid": 20, "dip": "192.168.5.63"}, {"sip/16": "149.154.0.0/16", "packets": 1, "bytes": 14644266, "records": 1, "rowid": 21, "dip": "192.168.5.55"}, {"sip/16": "31.13.0.0/16", "packets": 98, "bytes": 14182886, "records": 98, "rowid": 22, "dip": "192.168.5.92"}, {"sip/16": "23.203.0.0/16", "packets": 57, "bytes": 13683486, "records": 57, "rowid": 23, "dip": "192.168.5.63"}, {"sip/16": "204.79.0.0/16", "packets": 100, "bytes": 13591978, "records": 100, "rowid": 24, "dip": "192.168.5.63"}, {"sip/16": "31.13.0.0/16", "packets": 230, "bytes": 12779537, "records": 230, "rowid": 25, "dip": "192.168.5.89"}, {"sip/16": "66.225.0.0/16", "packets": 37, "bytes": 12128857, "records": 37, "rowid": 26, "dip": "192.168.5.63"}, {"sip/16": "203.205.0.0/16", "packets": 71, "bytes": 10778963, "records": 71, "rowid": 27, "dip": "192.168.5.66"}, {"sip/16": "184.25.0.0/16", "packets": 13, "bytes": 10454386, "records": 13, "rowid": 28, "dip": "192.168.5.60"}, {"sip/16": "205.203.0.0/16", "packets": 11, "bytes": 9394194, "records": 11, "rowid": 29, "dip": "192.168.5.63"}, {"sip/16": "205.185.0.0/16", "packets": 21, "bytes": 8966502, "records": 21, "rowid": 30, "dip": "192.168.5.67"}, {"sip/16": "69.147.0.0/16", "packets": 2, "bytes": 8581202, "records": 2, "rowid": 31, "dip": "192.168.5.113"}, {"sip/16": "104.107.0.0/16", "packets": 30, "bytes": 8573912, "records": 30, "rowid": 32, "dip": "192.168.5.63"}, {"sip/16": "85.234.0.0/16", "packets": 114, "bytes": 7997932, "records": 114, "rowid": 33, "dip": "192.168.5.58"}, {"sip/16": "74.125.0.0/16", "packets": 9, "bytes": 7890324, "records": 9, "rowid": 34, "dip": "192.168.5.96"}, {"sip/16": "192.229.0.0/16", "packets": 414, "bytes": 7841533, "records": 414, "rowid": 35, "dip": "192.168.5.116"}, {"sip/16": "72.21.0.0/16", "packets": 17, "bytes": 7014558, "records": 17, "rowid": 36, "dip": "192.168.5.67"}, {"sip/16": "54.231.0.0/16", "packets": 12, "bytes": 6373061, "records": 12, "rowid": 37, "dip": "192.168.5.100"}, {"sip/16": "54.231.0.0/16", "packets": 6, "bytes": 6280785, "records": 6, "rowid": 38, "dip": "192.168.5.105"}, {"sip/16": "74.125.0.0/16", "packets": 69, "bytes": 6262150, "records": 69, "rowid": 39, "dip": "192.168.5.99"}, {"sip/16": "17.253.0.0/16", "packets": 1, "bytes": 5915146, "records": 1, "rowid": 40, "dip": "192.168.5.79"}, {"sip/16": "17.248.0.0/16", "packets": 217, "bytes": 5759879, "records": 217, "rowid": 41, "dip": "192.168.5.103"}, {"sip/16": "54.231.0.0/16", "packets": 7, "bytes": 5674272, "records": 7, "rowid": 42, "dip": "192.168.5.115"}, {"sip/16": "172.217.0.0/16", "packets": 63, "bytes": 5345313, "records": 63, "rowid": 43, "dip": "192.168.5.94"}, {"sip/16": "54.231.0.0/16", "packets": 4, "bytes": 5342182, "records": 4, "rowid": 44, "dip": "192.168.5.113"}, {"sip/16": "72.21.0.0/16", "packets": 19, "bytes": 5268757, "records": 19, "rowid": 45, "dip": "192.168.5.98"}, {"sip/16": "54.230.0.0/16", "packets": 7, "bytes": 4871766, "records": 7, "rowid": 46, "dip": "192.168.5.83"}, {"sip/16": "173.194.0.0/16", "packets": 39, "bytes": 4666685, "records": 39, "rowid": 47, "dip": "192.168.5.99"}, {"sip/16": "104.20.0.0/16", "packets": 40, "bytes": 4513413, "records": 40, "rowid": 48, "dip": "192.168.5.92"}, {"sip/16": "184.25.0.0/16", "packets": 112, "bytes": 4235781, "records": 112, "rowid": 49, "dip": "192.168.5.63"}, {"sip/16": "104.73.0.0/16", "packets": 243, "bytes": 4153902, "records": 243, "rowid": 50, "dip": "192.168.5.117"}, {"sip/16": "184.26.0.0/16", "packets": 110, "bytes": 4101936, "records": 110, "rowid": 51, "dip": "192.168.5.113"}, {"sip/16": "119.84.0.0/16", "packets": 1, "bytes": 4000355, "records": 1, "rowid": 52, "dip": "192.168.5.50"}, {"sip/16": "204.16.0.0/16", "packets": 5, "bytes": 3902389, "records": 5, "rowid": 53, "dip": "192.168.5.56"}, {"sip/16": "23.213.0.0/16", "packets": 158, "bytes": 3651960, "records": 158, "rowid": 54, "dip": "192.168.5.63"}, {"sip/16": "104.118.0.0/16", "packets": 9, "bytes": 3635618, "records": 9, "rowid": 55, "dip": "192.168.5.107"}, {"sip/16": "23.63.0.0/16", "packets": 31, "bytes": 3616947, "records": 31, "rowid": 56, "dip": "192.168.5.100"}, {"sip/16": "198.54.0.0/16", "packets": 4, "bytes": 3483520, "records": 4, "rowid": 57, "dip": "192.168.5.63"}, {"sip/16": "172.231.0.0/16", "packets": 60, "bytes": 3388338, "records": 60, "rowid": 58, "dip": "192.168.5.63"}, {"sip/16": "23.73.0.0/16", "packets": 108, "bytes": 3079426, "records": 108, "rowid": 59, "dip": "192.168.5.98"}, {"sip/16": "74.125.0.0/16", "packets": 23, "bytes": 2956890, "records": 23, "rowid": 60, "dip": "192.168.5.116"}, {"sip/16": "74.125.0.0/16", "packets": 176, "bytes": 2787396, "records": 176, "rowid": 61, "dip": "192.168.5.63"}, {"sip/16": "23.72.0.0/16", "packets": 6, "bytes": 2729891, "records": 6, "rowid": 62, "dip": "192.168.5.107"}, {"sip/16": "31.13.0.0/16", "packets": 20, "bytes": 2695467, "records": 20, "rowid": 63, "dip": "192.168.5.95"}, {"sip/16": "104.118.0.0/16", "packets": 88, "bytes": 2675839, "records": 88, "rowid": 64, "dip": "192.168.5.103"}, {"sip/16": "180.92.0.0/16", "packets": 37, "bytes": 2667698, "records": 37, "rowid": 65, "dip": "192.168.5.100"}, {"sip/16": "184.29.0.0/16", "packets": 10, "bytes": 2645844, "records": 10, "rowid": 66, "dip": "192.168.5.94"}, {"sip/16": "208.86.0.0/16", "packets": 58, "bytes": 2636641, "records": 58, "rowid": 67, "dip": "192.168.5.61"}, {"sip/16": "94.31.0.0/16", "packets": 21, "bytes": 2619655, "records": 21, "rowid": 68, "dip": "192.168.5.63"}, {"sip/16": "192.0.0.0/16", "packets": 99, "bytes": 2593320, "records": 99, "rowid": 69, "dip": "192.168.5.75"}, {"sip/16": "31.13.0.0/16", "packets": 52, "bytes": 2588073, "records": 52, "rowid": 70, "dip": "192.168.5.83"}, {"sip/16": "72.21.0.0/16", "packets": 43, "bytes": 2580289, "records": 43, "rowid": 71, "dip": "192.168.5.63"}, {"sip/16": "104.73.0.0/16", "packets": 27, "bytes": 2432860, "records": 27, "rowid": 72, "dip": "192.168.5.94"}, {"sip/16": "159.53.0.0/16", "packets": 43, "bytes": 2410263, "records": 43, "rowid": 73, "dip": "192.168.5.100"}, {"sip/16": "172.217.0.0/16", "packets": 16, "bytes": 2377179, "records": 16, "rowid": 74, "dip": "192.168.5.100"}, {"sip/16": "17.248.0.0/16", "packets": 7, "bytes": 2373708, "records": 7, "rowid": 75, "dip": "192.168.5.73"}, {"sip/16": "23.235.0.0/16", "packets": 46, "bytes": 2331757, "records": 46, "rowid": 76, "dip": "192.168.5.63"}, {"sip/16": "209.191.0.0/16", "packets": 20, "bytes": 2328010, "records": 20, "rowid": 77, "dip": "192.168.5.113"}, {"sip/16": "72.247.0.0/16", "packets": 41, "bytes": 2315427, "records": 41, "rowid": 78, "dip": "192.168.5.60"}, {"sip/16": "199.27.0.0/16", "packets": 37, "bytes": 2287248, "records": 37, "rowid": 79, "dip": "192.168.5.63"}, {"sip/16": "23.63.0.0/16", "packets": 110, "bytes": 2191717, "records": 110, "rowid": 80, "dip": "192.168.5.89"}], "rows": "80", "query_conditions": {"end": "2016/02/24:01", "istart": "0", "out_type": "json", "classname": "all", "start": "2016/02/24:00", "sortby": "bytes", "stats": "sip/16,dip", "sensors": ["asa02", "kansascity", "squid", "squidkc"], "iend": "80", "types": ["in", "inweb", "inicmp"]}, "stats_totals": {"packets": 34560, "length": 2838, "bytes": 1317021570, "records": 34560}, "header": {"timestamp": "1456343371", "version": "1.57", "time_execution": "1.622414 seconds"}, "rows_searched": 34560}
+
+if(typeof(Storage) !== "undefined") {
+    // Code for localStorage/sessionStorage.
+    if (localStorage.getItem("dynamic") != null) {
+       dynamic=JSON.parse(localStorage.getItem("dynamic"));
+    }
+} else {
+    console.log("Sorry no local storage available")
+}
+
+var nodes = {};
+if(dynamic.gdata.length > 500) {
+// Seems to be a bit confusing at those scales.
+alert("The data seems to be too big for a good entity graph, recommend adjusting the data to 500 pairs or less")
+
+}
+// Compute the distinct nodes from the links.
+dynamic.gdata.forEach(function(link) {
+//              link['source']=link.dip;
+//              link['target']=link.sip;
+              Object.keys(link).map(function(k,v) {
+                  if(k.indexOf('sip') == 0) link['source']=link[k]
+                  if(k.indexOf('dip') == 0) link['target']=link[k]
+               })
+              link['type']='incoming';
+              ['source','target'].forEach( function (f) { link[f] = nodes[link[f]] || (nodes[link[f]] = {name: link[f], mtype: f, type: link['type']}) })
+              //link.source = nodes[link.source] || (nodes[link.source] = {name: link.source, type: link.type});
+              //link.target = nodes[link.target] || (nodes[link.target] = {name: link.target, type: link.type});
+
+});
+
+var width = 1960,
+    height = 1400;
+
+var force = d3.layout.force()
+    .nodes(d3.values(nodes))
+    .links(dynamic.gdata)
+    .size([width, height])
+    .linkDistance(60)
+    .charge(-300)
+    .on("tick", tick)
+    .start();
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+// Per-type markers, as they don't inherit styles.
+svg.append("defs").selectAll("marker")
+    .data(["incoming", "outgoing", "resolved"])
+  .enter().append("marker")
+    .attr("id", function(d) { return d; })
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 15)
+    .attr("refY", -1.5)
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
+    .attr("orient", "auto")
+    .append("path")
+    .attr("d", "M0,-5L10,0L0,5");
+
+var path = svg.append("g").selectAll("path")
+    .data(force.links())
+  .enter().append("path")
+    .attr("class", function(d) { return "link " + d.type; })
+    .attr("marker-end", function(d) { return "url(#" + d.type + ")"; });
+
+var circle = svg.append("g").selectAll("circle")
+    .data(force.nodes())
+     .enter().append("circle")
+    .attr("r", 6)
+    .attr("class",function (d) { return d.mtype+d.type; })
+    .attr("id", function(d) { return d.name; })
+//    .on("mouseover",function() { dropdown(this)})
+    .on("click", function() { alert(this.id); })
+//    .text("Data")
+    .call(force.drag);
+
+var text = svg.append("g").selectAll("text")
+    .data(force.nodes())
+  .enter().append("text")
+    .attr("x", 8)
+    .attr("y", ".31em")
+    .attr("class",function (d) { return d.mtype;})
+//    .attr("id", function(d) { return d.name; })
+    .text(function(d) { return d.name; });
+
+// Use elliptical arc path segments to doubly-encode directionality.
+function dropdown(circle) {
+//    console.log(circle);
+  circle.innerHTML="<title>"+circle.id+"</title>"
+  //alert(circle.id)
+}
+
+
+function tick() {
+  path.attr("d", linkArc);
+  circle.attr("transform", transform);
+  text.attr("transform", transform);
+}
+
+function linkArc(d) {
+  var dx = d.target.x - d.source.x,
+      dy = d.target.y - d.source.y,
+      dr = Math.sqrt(dx * dx + dy * dy);
+  return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target.x + "," + d.target.y;
+}
+
+function transform(d) {
+  return "translate(" + d.x + "," + d.y + ")";
+}
+
+</script>

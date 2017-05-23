@@ -1,0 +1,672 @@
+<html>
+<head>
+<title>Silk over webservices demo</title>
+    <!-- You can choose to get all these from the providers directly too -->
+<link rel="stylesheet" href="bootstrap.min.css">
+<link rel="stylesheet" href="bootstrap-table.css">
+<link rel="stylesheet" href="tablesorter.css" />
+<script type="text/javascript" src="jquery.min.js"></script>
+<script src="bootstrap.min.js"></script>
+<script src="bootstrap-table.js"></script>
+<script type="text/javascript" src="datepickr.min.js"></script>
+<style>
+/* Trigger vertical scroll    */
+/* Hide the horizontal scroll */
+.bootstrap-table {
+    display: inline-table;
+    width: 90%;
+/*    max-width: 95vw; */
+}
+.fixed-table-body thead th .th-inner {
+    max-width: 10vw;
+}
+tbody {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+    .table {
+        max-width: none;
+//       table-layout: fixed;
+        word-wrap: break-word;
+    }
+.fixed-table-toolbar .dropdown-menu {
+    text-align: left;
+    max-height: none;
+    overflow: auto;
+}
+
+.bar {
+  fill: steelblue;
+}
+.bar:hover {
+  fill: brown;
+}
+.axis {
+  font: 10px sans-serif;
+}
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+.ared {
+color: red;
+}
+
+
+div.tooltip {
+  position: absolute;
+  text-align: center;
+  width: 60px;
+  height: 28px;
+  padding: 2px;
+  font: 12px sans-serif;
+  background: lightsteelblue;
+  border: 0px;
+  border-radius: 8px;
+  pointer-events: none;
+}
+.slide-prev,
+.slide-next {
+   opacity: 0.5;
+   filter:alpha(opacity=50);
+   background-color: #80abc8;
+   position: absolute;
+   -ms-transform: translateY(-50%); /* IE 9 */
+   -webkit-transform: translateY(-50%);
+   transform: translateY(-50%);
+   z-index: 9;
+   border-radius: 3px;
+   margin-top: 150px;
+}
+.slide-prev { margin-left: 20px; }
+.slide-next { right: 0; margin-right: 20px; }
+.slide-prev:hover,
+.slide-next:hover {
+   opacity: 1;
+   filter:alpha(opacity=100);
+}
+
+</style>
+<script src="d3.min.js"></script>
+</head>
+<body>
+
+<div style="padding: 9px">
+<table><caption>Silk Criterea</caption>
+<tr><td colspan='2'>
+Search for
+<a href='#' onclick='add_criterea()'>+ Add conditions</a>
+<table id="jqtable">
+<tr><td></td><td></td>
+</tr>
+</table>
+
+
+</td>
+</tr>
+<tr><td>
+                Start :</td><td>
+                <input id="start" size="16" />:
+<select id="starthour"><option>00</option><option>01</option><option>02</option><option>03</option><option>04</option><option>05</option><option>06</option><option>07</option><option>08</option><option>09</option><option>10</option><option>11</option><option>12</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option><option>21</option><option>22</option><option>23</option></select>:00
+</td></tr>
+                <tr><td>
+                End:</td><td>
+                <input id="end" size="16" />:
+<select id="endhour"><option>00</option><option selected>01</option><option>02</option><option>03</option><option>04</option><option>05</option><option>06</option><option>07</option><option>08</option><option>09</option><option>10</option><option>11</option><option>12</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option><option>21</option><option>22</option><option>23</option></select>:59
+<br><small>All times in GMT</small>
+</td></tr>
+<tr><td colspan="2">
+<input type="checkbox" id="rwstatsup" onclick="reveal_stats(this.checked)" /> Top-N Stats<br />
+<div id="rwstats-div" style="display:none"></div>
+<div id='max_top' style='display:inline'>Max rows</div> <input type='text' id='Maxrows' value='1000' size=6 />
+(Limit 1000)<br />
+<div id='showrows' style='display:none; color: #7777ff;font-size:0.8em'>
+Number of rows (matching this query): <input style='border:0' type='text' id='Next' value='0' onfocus='this.blur()' size='10'/></div>
+
+<input type='button' name='xsubmit' value='Search' onclick='psearch(0)' />
+<input type='button' name='rsubmit' value='Reset All' onclick='location.reload()' style='color: red' />
+<a href="#" onclick="$('#table-conditions-div').toggle()" style="font-size: 0.8em;">Show/Hide conditions</a> | <a href="#" onclick="$('#graphwrapper').toggle()" style="font-size: 0.8em;">Show/Hide graph</a> |
+<a href="#" onclick="entity_graph()" style="font-size: 0.8em;">Build entity graph</a>
+<br />
+<div id="table-conditions-div" style="display:none">
+<table id="table-conditions"></table>
+</div>
+<div id='multipage' style='display:none;'>
+Page Navigation: <a href='#' onclick='psearch(0);' id="FirstPage">First</a>
+<a href='#' onclick='psearch(fstart-maxreturn);' id="PrevPage">Prev</a>
+<input type='text' value='' size='20' onfocus='this.blur()' id='viewing' />
+<a href='#' onclick='psearch(fstart+maxreturn);' id="NextPage">Next</a>
+</div>
+<div style='display:hidden; font-size: 0.7em; color: steelblue' id='graphinfo'>
+&nbsp; </div>
+<!--
+<input type='button' name='heatmap' value='Map Plot (IP4_START)' onclick='openmap("IP4_STARTS","Mar
+ker")' />
+<input type='button' name='heatmap' value='Heatmap Plot(IP4_START)' onclick='openmap("IP4_STARTS","
+HeatMap")' />
+-->
+</td></tr>
+</table>
+</form>
+<div id="loading"></div>
+<div id="graphwrapper" style="display:none">
+<div id="graphchart" style="display: none;overflow:hidden; vertical-align:middle;">
+<div class="slide-next" onclick="mfrwrd()">
+<span class="glyphicon glyphicon-chevron-right" aria-hidden="true" style="font-size:60px"></span></div>
+<div class="slide-prev" onclick="mrwnd()">
+<span class="glyphicon glyphicon-chevron-left" aria-hidden="true" style="font-size:60px"></span></div>
+
+<div id="notstats" style="display:inline">
+Graph data by <input type="radio" name="bytepacket" value="byte"
+                     onclick="$('#graphrec').hide(); $('#graphpack').hide(); $('#graphbyte').show();" checked/>Bytes
+<input type="radio" name="bytepacket" value="packets"
+       onclick="$('#graphrec').hide(); $('#graphbyte').hide(); $('#graphpack').show();"/>Packets
+    <input type="radio" name="bytepacket" value="packets"
+           onclick="$('#graphpack').hide(); $('#graphbyte').hide(); $('#graphrec').show();" style="display: none"
+           id="statsgraphs"/>
+    <span style="display: none" id="statsgraphstxt">Records</span>
+<input type="radio" name="bytepacket" value="both"
+       onclick="$('#graphbyte').show(); $('#graphpack').show(); $('#graphrec').show();"/>
+    <span id="statsgraphsboth">Both</span>
+</div>
+<div id="graphbyte" style="display: none"></div>
+<div id="graphpack" style="display: none"></div>
+<div id="graphrec" style="display: none"></div>
+</div>
+</div>
+
+<table id="table-focus"></table>
+<table id="table-javascript"></table>
+<script>
+function entity_graph() {
+  window.open("entity.html");
+}
+function mfrwrd() {
+var winwidth=$(window).width()
+var graphwidth=$("#graphbyte")[0].scrollWidth
+var unit=-1*parseInt($('#graphbyte').css('margin-left').replace("px",""))
+if( winwidth+unit > graphwidth) {
+alert("Last scroll")//"+winwidth+":"+unit+":"+unit);
+return;
+}
+$('#graphbyte').animate({marginLeft: '-='+$(window).width()/2}, 1100);
+}
+function mrwnd() {
+var unit=parseInt($('#graphbyte').css('margin-left').replace("px",""))
+if (unit >= 0) {
+alert("First scroll")
+return;
+}
+$('#graphbyte').animate({marginLeft: '+='+$(window).width()/2}, 1100);
+}
+function matchup(which) {
+ console.log(which.value)
+ $('#end').val(which.value);
+}
+var s_criterea = {"sip": "Source IP (wildcard IP)","dip": "Destination IP (IP or wildcard)","protocol":"Protocol (number or range)", "sport": "Source Port (number or range)",
+    "dport": "Destination port (number or range)","packets": "Packets (number or range)", "bytes": "Bytes (number or range)","sensors": "Sensor name (string)",
+    "types": "Type name (string in,inweb)", "duration_secs": "Duration (seconds or range)", "classname": "Class Name", "tcpflags": "TCP Flags (FSPA)",
+    "classtype_id": "Class Type (id)", "nhip": "Next Hope IP (IP or wildcard)", "icmpcode": "ICMP Code (number or range)",
+    "etime_epoch_secs":"End Time (seconds)","stime_epoch_secs":"Start Time (seconds)"}
+var display_columns = ["sip","dip","protocol","sport","dport","bytes","packets","duration_secs","application","sensor","typename"]
+var columnx;
+var selector=""
+for (var k in s_criterea)
+    selector += "<option value='"+k+"'>"+s_criterea[k]+"</option>"
+
+function reveal_stats(showhide) {
+    if(showhide) $("#max_top").html("Top-N rows");
+    else $("#max_top").html("Max rows");
+    var inselector=selector.replace("'types'","'typename'")
+    inselector=inselector.replace("'sensors'","'sensor'")
+    g_criterea = {"stime":"Start time","etime":"End Time"} // Additional group by fields
+    for (var k in g_criterea)
+        inselector += "<option value='"+k+"'>"+g_criterea[k]+"</option>"
+    $('#rwstats-div').html('Fields: <br /><select multiple id="fields" ondblclick="addmask(this)">'+inselector+'</select><br />Sort by: <select id="sortby">' +
+            '<option>bytes</option><option>packets</option><option>records</option><option>time</option></select> <small>Doubleclick on a field to add a mask or factor to group by</small>')
+
+   if(showhide)
+       $('#rwstats-div').show()
+   else {   $('#rwstats-div').hide(); return; }
+
+}
+
+function add_criterea() {
+  addTableRow($('#jqtable'))
+}
+$(function () {
+    $('#jqtable').on('click', 'tr a', function (e) {
+        e.preventDefault();
+        $(this).closest('tr').remove();
+    });
+});
+var LastId=1
+
+function addTableRow(jQtable) {
+//    var lastId = jQtable.find("tr:last td:first input").attr("id");
+    var row = $('<tr />');
+        var cell = $('<td />');
+        var label = $('<label for="selector' + LastId + '">' + LastId + '. &nbsp; </label>');
+	var input = $('<select id="selector'+LastId+'">'+selector+'</select>');
+	var negative=$('<select id="negate'+LastId+'"><option value="">==</option><option value="!">!=</option></select>');
+	cell.append(label,input,negative)
+        row.append(cell);
+        cell = $('<td />');
+        label = $('<label for="input' + LastId + '">&nbsp;</label>');
+        input = $('<input type="text" name="input' + LastId + '" id="input' + LastId + '" />');
+        cell.append(label, input);
+        row.append(cell);
+    row.append('<td><a href="#" style="color:red">X</a></td>');
+    jQtable.append(row);
+    LastId++
+}
+
+var baseurl="/cgi-bin/silk/silkapi.py?out_type=json&"
+var maxreturn=1000;
+var fstart=0;
+function zpad(h) {
+  return (h < 10) ? ("0" + h) : String(h);
+}
+//uTable(url);
+/*
+new datepickr('start',{'dateFormat': 'Y/m/d'});
+fend=new datepickr('end',{'dateFormat': 'Y/m/d'});
+var now=new Date();
+$('#end').val(now.getFullYear()+'/'+zpad(now.getMonth()+1)+'/'+zpad(now.getDate()))
+$('#start').val(now.getFullYear()+'/'+zpad(now.getMonth()+1)+'/'+zpad(now.getDate()))
+*/
+new datepickr('start',{'dateFormat': 'd F Y'});
+fend=new datepickr('end',{'dateFormat': 'd F Y'});
+var now=new Date();
+$('#end').val(now.getDate()+' '+fend.currentMonth.innerHTML)
+$('#start').val(now.getDate()+' '+fend.currentMonth.innerHTML)
+function psearch(istart) {
+	      if(istart < 0) return;
+//	      if(istart == 0) {
+			  $('#table-javascript').bootstrapTable('destroy')
+			  $('#table-focus').bootstrapTable('destroy')
+			  $('#table-conditions').bootstrapTable('destroy')
+			  $('#graphchart').hide()
+//		}
+
+	      var start=new Date($('#start').val())
+	      var end=new Date($('#end').val())
+//	 console.log(start)
+	      var mstart=start.getFullYear()+'/'+zpad(start.getMonth()+1)+'/'+zpad(start.getDate())+':'+$('#starthour').val()
+	      var mend=end.getFullYear()+'/'+zpad(end.getMonth()+1)+'/'+zpad(end.getDate())+':'+$('#endhour').val()
+//        var raw= $('#raw').prop('checked') ? 'raw' : ''
+//        var iprange=subnet2range($('#searchme').val());
+//        var istart=parseInt($('#Next').val());
+	var iuserend=parseInt($('#Maxrows').val());
+        if(!isNaN(iuserend)) {
+        if (iuserend <= maxreturn) { maxreturn=iuserend }
+	else { alert("Entry for Max return is invalid "+iuserend+":"+maxreturn); return false; }
+	  }
+        var iend=istart+maxreturn;
+
+        var qc=""
+	for (var i=1;i<LastId;i++) {
+	   if($('#input'+i).val() != "") qc += $('#selector'+i).val()+"="+$('#negate'+i).val()+$('#input'+i).val()+'&'
+         }
+	if($('#rwstatsup').prop('checked')) {
+            var fields=$('#fields').val()
+	    if(!fields) { alert("At least one field should be selected"); return; }
+	    qc+='sortby='+$('#sortby').val()+'&stats='+fields.join(',')+'&'
+        }
+        var url=baseurl+qc+'start_date='+mstart+'&end_date='+mend+'&istart='+istart+'&iend='+iend
+
+			       $("#loading").html("<img src='loading1.gif' width='20'/>")
+         var loc = location.protocol+"//"+location.host+url
+//location.href.substr(0,location.href.lastIndexOf('/')+1)+url
+         var locxml = loc.replace("=json","=xml");
+         var loccsv = loc.replace("=json","=csv");
+         $("#urlhelp").html("Rest URL is <a href='"+loc+"' target='_new'>JSON</a> : "+loc+"<br /> and <a href='"+locxml+"' target='_new'>XML</a> : "+locxml+"<br /> and <a href='"+loccsv+"' target='_new'>CSV</a> : "+loccsv);
+			      uTable(url);
+			      //         console.log(flat.gdata.length);
+			      fstart=istart
+}
+function icmpformat(input,row,index) {
+		          if(!input) return;
+		          if (row.protocol && row.protocol != 1) return input.toLocaleString();
+			  if (parseInt(input) == 0) return 0;
+			  var itype=input>>8;
+			  var icode=input&0xFF;
+			  return "Type: "+itype+", Code:"+icode;
+			  }
+
+function iformat(input) {
+ if (input)
+ return input.toLocaleString();
+//for icmp types and codes you can do
+//type=(input >> 8) and code=(input & 0xFF)
+}
+function uTable(url) {
+
+    $.getJSON(url, function (flat) {
+        if (flat['error']) {
+            alert("Query Error: " + flat.error)
+            $("#loading").html("")
+            return;
+        }
+        currentdata = flat.gdata
+        //console.log("New data recevied"+flat.gdata.length)
+        mpaginate(parseInt(flat.rows) + 1); // Create a pagination for outside table
+
+        if (flat.gdata.length < 1) {
+            alert('No data returned')
+            $("#loading").html("")
+            return;
+        }
+	localStorage.setItem("dynamic", JSON.stringify(flat)); // Store for later use in local storage
+        columnx = [{field: 'state', checkbox: true}, {field: 'rowid', title: 'rowid', sortable: true, visible: false},
+            {field: 'stime', title: 'stime', sortable: false}]
+        columnformatter = {'bytes': 'commaquene'}
+        var def = {'rowid': 1, 'stime': 1} // Ignore these columns as they don't reference directly
+        for (var ik=0;ik<display_columns.length;ik++) {
+            k=display_columns[ik]
+            def[k] = 1
+            //if ((k == 'types') || (k == 'sensors')) continue; // strange column as it maps to different part of the query in silk2json
+	    var dformat=iformat;
+	    if ((k === "dport") || (k === "sport")) dformat=icmpformat
+            columnx.push({field: k, title: k.replace("_"," "), sortable: true, formatter: dformat})
+        }
+        for (var k in flat.gdata[0]) {
+	    var dformat=iformat;
+            if (def[k] === undefined)
+                columnx.push({field: k, title:  k.replace("_"," "), sortable: true, visible: false, formatter: dformat})
+        }
+
+        if ($('#rwstatsup').prop('checked')) { // override visible columns now for rwstats
+            columnx = [{field: 'state', checkbox: true}, {
+                field: 'rowid',
+                title: 'rowid',
+                sortable: true,
+                visible: false
+            }]
+
+            // if the data has stats_totals calculate % and add a new row
+            // if the data has stats_totals calculate % and add a new row
+            if (flat.stats_totals) {
+		$('#showrows').show()
+                $('#Next').val(flat.stats_totals["length"]) // We know the exact last for this one
+                delete flat.stats_totals["length"]
+                for (var i=0; i< flat.gdata.length; i++) {
+                    for (var fkeys in flat.stats_totals) {
+                        var percent = 100*parseInt(flat.gdata[i][fkeys])/flat.stats_totals[fkeys]
+                        flat.gdata[i]["% "+fkeys] = parseInt(100*percent)/100 // convert to %.2f
+                    }
+                }
+            }
+            for (var k in flat.gdata[0]) {
+                if (k != 'rowid')
+                    columnx.push({field: k, title: k, sortable: true, visible: true, formatter: iformat})
+
+            }
+        }
+
+
+        var columnc = []
+        delete flat.query_conditions.out_type
+        for (var k in flat.query_conditions) {
+            columnc.push({field: k, title: k, sortable: false})
+        }
+        $('#table-conditions').bootstrapTable('destroy')
+        $('#table-conditions').bootstrapTable({
+            method: 'get',
+            data: [flat.query_conditions],
+            columns: columnc,
+            height: 100,
+            showColumns: false,
+            showHeader: true,
+        });
+
+//$('#table-javascript').bootstrapTable('removeAll')
+
+        $('#table-javascript').bootstrapTable({
+            method: 'get',
+//                url: 'data2.json',
+            data: flat.gdata,
+            cache: false,
+//                height: 200,
+            striped: true,
+            pagination: true,
+//	        sidePagination: 'server',
+            pageSize: 10,
+            pageList: [10, 25, 50, 100, 200],
+            search: true,
+            showColumns: true,
+            showRefresh: true,
+            /*
+		showFilter: true,
+		showExport: true,
+		exportTypes: ['json', 'xml', 'csv', 'txt', 'sql', 'excel'],
+*/
+            minimumCountColumns: 2,
+            clickToSelect: true,
+                columns: columnx,
+            /*
+                columns: [{
+                    field: 'state',
+                    checkbox: true
+                }, {
+                    field: 'id',
+                    title: 'Item ID',
+                    align: 'right',
+                    valign: 'bottom',
+                    sortable: true
+                }, {
+                    field: 'name',
+                    title: 'Item Name',
+                    align: 'center',
+                    valign: 'middle',
+                    sortable: true,
+//                    formatter: nameFormatter
+                }, {
+                    field: 'price',
+                    title: 'Item Price',
+                    align: 'left',
+                    valign: 'top',
+                    sortable: true,
+//                    formatter: priceFormatter,
+//                    sorter: priceSorter
+                }
+
+]
+*/
+            });
+    $('#table-javascript').bootstrapTable('load',flat.gdata)
+    $("#loading").html("")
+
+        if (flat['rows_searched']) $('#rows_searched').html("<br /> Number of records scanned " + flat.rows_searched +
+                ", Search took about " +
+                flat.header.time_execution + ", search completed at " + new Date(parseInt(
+                                flat.header.timestamp) * 1000))
+        if (flat.gdata.length > 2) { // Graph only for items that are atleast three
+            if ($('#rwstatsup').prop(
+                            'checked')) {
+                makegraph('#graphbyte', flat.
+                        gdata, 'bytes')
+                makegraph('#graphpack', flat.gdata,
+                        'packets')
+                makegraph('#graphrec', flat.gdata
+                        , 'records')
+                $(
+                        "#statsgraphs").show()
+                $("#statsgraphstxt").show()
+                $("#statsgraphsboth").html(
+                        "All three");
+            } else {
+                makegraph('#graphbyte'
+                        , flat.gdata, 'bytes')
+                makegraph('#graphpack'
+                        , flat.gdata, 'packets')
+            }
+            $('#graphchart').show()
+            $('#graphbyte').show()
+            $('#graphpack').hide()
+            $("#graphrec").hide()
+        }
+    })
+}
+
+function mpaginate(length) {
+    var nlength = maxreturn + fstart;
+    if (length >= maxreturn) {
+	$('#showrows').show()
+        $('#Next').val(nlength + '+')
+        $('#multipage').show()
+        $('#viewing').val('Viewing ' + fstart + '-' + nlength);
+    }
+    else {
+	$('#showrows').show()
+        $('#Next').val(length-1);
+        $('#NextPage').hide()
+    }
+    if (fstart < 1) {
+        $("#PrevPage").hide()
+        $("#FirstPage").hide()
+    } else {
+         $("#PrevPage").show()
+        $("#FirstPage").show()
+    }
+
+}
+
+mdata=[{"bytes": "1008167", "stime": "A"}, {"bytes": "1001492", "stime": "B"}, {"bytes": "1002782", "stime": "C"}, {"bytes": "1004253", "stime": "D"}, {"bytes": "10012702", "stime": "E"}, {"bytes": "1002288", "stime": "F"}, {"bytes": "1002015", "stime": "G"}, {"bytes": "1006094", "stime": "H"}, {"bytes": "1006966", "stime": "I"}, {"bytes": "1000153", "stime": "J"}, {"bytes": "1000772", "stime": "K"}, {"bytes": "1004025", "stime": "L"}, {"bytes": "1002406", "stime": "M"}, {"bytes": "1006749", "stime": "N"}, {"bytes": "1007507", "stime": "O"}, {"bytes": "1001929", "stime": "P"}, {"bytes": "1000095", "stime": "Q"}, {"bytes": "1005987", "stime": "R"}, {"bytes": "1006327", "stime": "S"}, {"bytes": "1009056", "stime": "T"}, {"bytes": "1002758", "stime": "U"}, {"bytes": "1000978", "stime": "V"}, {"bytes": "1002360", "stime": "W"}, {"bytes": "1000150", "stime": "X"}, {"bytes": "1001974", "stime": "Y"}, {"bytes": "1000074", "stime": "Z", "info": "XX"}]
+var x;
+function makegraph(graphdiv,data,ctype) {
+
+var gwidth=data.length*5;
+//console.log(gwidth)
+if(gwidth < 800) gwidth=800;
+//gwidth=800
+var margin = {top: 9, right: 20, bottom: 30, left: 90},
+    width = gwidth - margin.left - margin.right,
+    height = 300 - margin.top - margin.bottom;
+
+ x = d3.scale.ordinal()
+  .rangeBands([0,width]);
+//    .rangeRoundBands([0, width], .001);
+//x=d3.scale.linear().domain([0,1000]).range(0,width)
+
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+
+//Nearest even number with 20 ticks
+var xtick=2*Math.ceil(data.length/40)
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom")
+    .tickFormat(function(d) { if (d % xtick) return ""; else return d;})
+
+//    .tickValues(data.filter(function(num){ if( num.rowid % xtick ) return num.rowid;}))
+
+
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+//    .ticks(10, "%");
+
+d3.select(graphdiv).select("svg").remove()
+var svg = d3.select(graphdiv).append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .attr("id", graphdiv+"svg")
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+var line = d3.svg.line()
+    .x(function(d) { return x(d.rowid); })
+    .y(function(d) { return y(d[ctype]); });
+
+  x.domain(data.map(function(d) { return d.rowid; }));
+  var ymax=d3.max(data, function(d) { return d[ctype]; });
+  var ymin=d3.min(data, function(d) { return d[ctype]; });
+  y.domain([ymin, ymax]);
+  yHeight=Math.log(ymax)/Math.log(10)
+//  console.log(yHeight)
+  if(yHeight<10) yHeight=10;
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+
+
+svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", yHeight)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text(ctype);
+// console.log(x.rangeBand())
+
+  var bar = svg.selectAll(".bar")
+      .data(data);
+    bar.enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", function(d) { return x(d.rowid); })
+      .attr("width", x.rangeBand())
+      .attr("y", function(d) { return y(d[ctype]); })
+      .attr("height", function(d) { var xya= height - y(d[ctype]);  /* console.log(xya+":"+d[ctype]);*/  return height - y(d[ctype]); })
+      /* .attr("title", function(d) { return d[ctype]+" "+ctype+" at "+d.stime; }) */
+      .on("mouseover", function(d) { $("#graphinfo").html(d3.format('0,000')(d[ctype])+" "+ctype+" at "+d.stime); $("#graphinfo").show(); })
+      .on("mouseout",function(d) { $("#graphinfo").hide()})
+      .on("click",function(d) { tablegraph(d)});
+
+}
+//makegraph(mdata)
+function tablegraph(d) {
+//alert(d)
+$('#table-focus').bootstrapTable({
+method: 'get',
+data: [d],
+columns: columnx,
+height: 100,
+showColumns: false,
+showHeader: true,
+rowStyle: mrowStyle
+});
+$('#table-focus').bootstrapTable('load',[d])
+}
+function mrowStyle(row, index) {
+        var classes = ['ared', 'success', 'info', 'warning', 'danger'];
+        if (index % 2 === 0 && index / 2 < classes.length) {
+            return {
+                classes: classes[index / 2]
+            };
+        }
+        return {};
+}
+function addmask(which) {
+    var mask = prompt("Provide a number or IP subnet mask to group by", 24)
+    if(!mask) return;
+    var m = parseInt(mask)
+    if (isNaN(mask)) {
+        alert("This has to be a number ");
+        return false;
+    }
+    var sortvalue=which.options[which.selectedIndex].value.split("/")
+    var showvalue=which.options[which.selectedIndex].text.split("/")
+
+    which.options[which.selectedIndex].value = sortvalue[0] + "/" + mask
+    which.options[which.selectedIndex].text = showvalue[0] + "/" + mask
+}
+
+
+</script>
+<div id='rows_searched' style='color: #7777ff; font-size:0.8em'></div>
+
+<div style='display:inline;font-size: 0.8em;' id='urlhelp'></div>
+</div>
+
+
+</body>
+</html>
