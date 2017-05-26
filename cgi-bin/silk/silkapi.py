@@ -308,6 +308,9 @@ class SilkAPI:
         """
         if os.environ.get("SILK_DATA_ROOTDIR", None):
             self.silkconf = os.environ["SILK_DATA_ROOTDIR"] + "silk.conf"
+        if os.environ.get("SILK_CONFIG_FILE", None): #override when SILK_CONFIG_FILE is also present
+            self.silkconf = os.environ["SILK_CONFIG_FILE"]
+
 
         if os.path.isfile(self.silkconf) == False or silk.site.init_site(siteconf=self.silkconf) == False:
             if os.environ.get('HTTP_HOST', None):  # push headers before putting error out for HTTP sessions
