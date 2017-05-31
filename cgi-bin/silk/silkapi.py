@@ -288,7 +288,6 @@ class SilkAPI:
         self.istart = 0
         self.iend = 1000
         self.args = {}
-        self.setup_args(args)
         self.logger = logging.getLogger('SilkAPI')
         self.handler = setupogging(self.logger, level=self.loglevel, type=self.logtype)
         self.rows_searched = 0
@@ -300,12 +299,6 @@ class SilkAPI:
         self.logger.debug("valid: {0}".format(self.valid_silk_args))
         self.logger.debug("lambda: {0}".format(self.silk_lambda_functions))
         self.logger.debug("args: {0}".format(self.args))
-
-    def setup_args(self, args):
-        """
-        This method processes arguments and puts them class members.  It can handle arguments passed to the constructor
-        and arguments passed through an HTTP_POST
-        """
         if os.environ.get("SILK_DATA_ROOTDIR", None):
             self.silkconf = os.environ["SILK_DATA_ROOTDIR"] + "silk.conf"
         if os.environ.get("SILK_CONFIG_FILE", None): #override when SILK_CONFIG_FILE is also present
@@ -324,6 +317,13 @@ class SilkAPI:
                        ", update environment variable if needed SILK_DATA_ROOTDIR", self.query_arguments["out_type"])
             sys.exit(2)
 
+    def setup_args(self, *args):
+        """
+        This method processes arguments and puts them class members.  It can handle arguments passed to the constructor
+        and arguments passed through an HTTP_POST
+        """
+
+
         self.default_silk_args = {'classname': str(silk.site.default_class()),
                                   'types': silk.site.default_types(silk.site.default_class()),
                                   'sensors': silk.site.class_sensors(silk.site.default_class()),
@@ -336,7 +336,7 @@ class SilkAPI:
         # HTTP_POSTs cannot update program_args
         if os.environ.get('HTTP_HOST', None):
             self.is_http_request = True
-            form = cgi.FieldStorage()
+            form = cgi.FieldStorage(*args)
             for v in form:
                 if v in self.default_silk_args:
                     self.default_silk_args[v] = getformvalue(form, v)
@@ -424,6 +424,7 @@ class SilkAPI:
                     error_exit(
                         "Fields given for stats is not valid should be one of the silk columns, invalid field is : " +
                         field)
+        self.rows_searched=0
 
     @staticmethod
     def return_valid_silk_args():
@@ -673,5 +674,7 @@ if __name__ == '__main__':
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     sys.excepthook = fatal_exit
     silkq = SilkAPI()
+    #to execute this in fastCGI or WSGI run setup_args with CGI variable for cgi.FieldStorage(*args) to inherit
+    silkq.setup_args(None)
     # Execute and display the data
     silkq.execute_query()
