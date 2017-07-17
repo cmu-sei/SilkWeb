@@ -124,19 +124,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 __appname__ = 'SilkAPI'
-__version__ = "1.60"
+__version__ = "1.80"
 
 import sys, re, silk, json, types, cgi, os, datetime, getopt, logging, imp, argparse, csv, warnings
 from xml.etree.ElementTree import Element, tostring
 
+try:
+    isinstance(1,long)
+except:
+    long=int 
 
 def error_exit(errormsg, out_type="json"):
     if out_type == 'json':
-        print '{"error": "' + errormsg.replace('"', '') + '"}'
+        print('{"error": "' + errormsg.replace('"', '') + '"}')
     elif out_type == 'xml':
-        print '<o><error><![CDATA[' + errormsg.replace("]]>", "") + "]]></error></o>"
+        print('<o><error><![CDATA[' + errormsg.replace("]]>", "") + "]]></error></o>")
     else:
-        print "#ERROR:", errormsg
+        print("#ERROR:", errormsg)
     # print footer_print.get(out_type,"")
     sys.exit(255)
 
@@ -212,7 +216,7 @@ def process_cmdline_args(args):
 def print_version():
     """Print app version"""
     version = "{0} - version {1}".format(__appname__, __version__)
-    print version
+    print(version)
 
 
 def helper(dvars, recvars):
@@ -266,7 +270,7 @@ class SilkAPI:
         self.silkconf = self.program_args['silkconf']
         self.maxrows = self.program_args['maxrows']
         if os.path.isfile("/etc/silkweb/silkwebconf.py"): # override program_args variables.
-            execfile("/etc/silkweb/silkwebconf.py")
+            exec(open("/etc/silkweb/silkwebconf.py").read())
         self.is_http_request = False  # Is this request a http request - assume it is CLI
         self.cachedays = 3  # cache the results for 3 days behind reverse proxy
         self.query_arguments = {'istart': 0, 'iend': 1000, 'out_type': 'json',
@@ -316,7 +320,7 @@ class SilkAPI:
                     self.query_arguments["out_type"] = getformvalue(form, "out_type")
                 else:
                     self.query_arguments["out_type"] = "json"
-                print self.http_header.get(self.query_arguments["out_type"], "Content-type: text/plain\n")
+                print(self.http_header.get(self.query_arguments["out_type"], "Content-type: text/plain\n"))
             error_exit("Error could not load silk.conf at " + self.silkconf +
                        ", update environment variable if needed SILK_DATA_ROOTDIR", self.query_arguments["out_type"])
             sys.exit(2)
@@ -324,7 +328,9 @@ class SilkAPI:
     def setup_args(self, *args):
         """
         This method processes arguments and puts them class members.  It can handle arguments passed to the constructor
-        and arguments passed through an HTTP_POST
+        and arguments passed through an HTTP_POST or through CLI arguments
+        Currently classtypes is not supported, when supported a tuple like 
+        ((class1,type1),(class2,type2)) may be provided instead of classname and types distinctly
         """
 
 
@@ -347,12 +353,12 @@ class SilkAPI:
                 elif v in self.query_arguments:
                     self.query_arguments[v] = getformvalue(form, v)
                 else:
-                    self.extra_silk_args[unicode(v, 'utf-8')] = getformvalue(form, v)
+                    self.extra_silk_args[v] = getformvalue(form, v)
             time_format = "%a, %d %b %Y %H:%M:%S %Z"
-            print "Expires: %s" % (
-                (datetime.datetime.now() + datetime.timedelta(days=self.cachedays)).strftime(time_format))
-            print "Date: %s" % (datetime.datetime.now().strftime(time_format))
-            print self.http_header.get(self.query_arguments['out_type'], "Content-type: text/plain\n")
+            print("Expires: %s" % (
+                (datetime.datetime.now() + datetime.timedelta(days=self.cachedays)).strftime(time_format)))
+            print("Date: %s" % (datetime.datetime.now().strftime(time_format)))
+            print(self.http_header.get(self.query_arguments['out_type'], "Content-type: text/plain\n"))
         else:  # Assume CLI operations
             parg = argparse.ArgumentParser(description="silkweb parser",
                                            usage=helper(self.default_silk_args, self.valid_silk_args))
@@ -362,24 +368,29 @@ class SilkAPI:
             while i < len(addon):
                 addon[i] = re.sub(r'^\-+', '', addon[i])
                 x = addon[i].split('=')
+                if x[0] in ["v","version"]: 
+                    print_version() # Just print version and exit
+                    sys.exit(0)                        
                 if len(x) > 1:
                     cform[x[0]] = "".join(x[1:])
                     i += 1
                 else:
                     cform[addon[i]] = addon[i + 1]
                     i += 2
-            if "v" in cform or "version" in cform:
-                print_version()
-                sys.exit(0)
             for v in cform:
                 if v in self.default_silk_args:
                     self.default_silk_args[v] = cform[v]
                 elif v in self.query_arguments:
                     self.query_arguments[v] = cform[v]
                 else:
-                    self.extra_silk_args[unicode(v, 'utf-8')] = cform[v]
+                    self.extra_silk_args[v] = cform[v]
 
-        # Remap legacy arguments
+        # Updates types if classname is specified and types is NOT specified
+        if self.default_silk_args['classname'] != str(silk.site.default_class()):
+            if self.default_silk_args['types'] == silk.site.default_types(silk.site.default_class()):
+                self.default_silk_args['types'] = silk.site.default_types(self.default_silk_args['classname'])
+
+        # Remap legacy arguments 
         for legacy in ["start_date", "end_date"]:
             if legacy in self.extra_silk_args.keys():
                 self.default_silk_args[legacy.replace("_date", "")] = self.extra_silk_args[legacy]
@@ -400,7 +411,7 @@ class SilkAPI:
 
         for key in self.extra_silk_args.keys():
             if key not in self.valid_silk_args:
-                error_exit("Some variable you provided are not recoginized " + key + " : " + self.extra_silk_args[key])
+                error_exit("Some variable you provided are not recoginized " + str(key) + " : " + str(self.extra_silk_args[key]))
         if self.query_arguments['sortby'] not in self.stats_columns and self.query_arguments['sortby'] != "time":  #
             error_exit("Provided query argument for sortby to sort by should be either bytes or packets or records, "
                        "invalid argument provided " + self.query_arguments['sortby'])
@@ -631,29 +642,29 @@ class SilkAPI:
         if self.args['out_type'] == 'json':
             xresults = {"header": xheader, "query_conditions": print_args, "stats_totals": self.stats_totals,
                         "gdata": data, "rows": str(len(data)), "rows_searched": self.rows_searched}
-            print json.dumps(xresults, default=str)
+            print(json.dumps(xresults, default=str))
         elif self.args['out_type'] == 'xml':
-            print '<?xml version="1.0" encoding="UTF-8"?>'
-            print '<o>'
-            print tostring(dict2xml('header', xheader))
-            print tostring(dict2xml('query_conditions', print_args))
-            print '<gdata class="array">'
+            print('<?xml version="1.0" encoding="UTF-8"?>')
+            print('<o>')
+            print(tostring(dict2xml('header', xheader)))
+            print(tostring(dict2xml('query_conditions', print_args)))
+            print('<gdata class="array">')
             for xdata in data:
-                print tostring(dict2xml('record', xdata))
-            print "</gdata>"
-            print tostring(dict2xml('stats_totals',self.stats_totals))
-            print "<rows>" + str(len(data)) + "</rows>"
-            print "<rows_searched>" + str(self.rows_searched) + "</rows_searched>"
-            print '</o>'
+                print(tostring(dict2xml('record', xdata)))
+            print("</gdata>")
+            print(tostring(dict2xml('stats_totals',self.stats_totals)))
+            print("<rows>" + str(len(data)) + "</rows>")
+            print("<rows_searched>" + str(self.rows_searched) + "</rows_searched>")
+            print('</o>')
         elif self.args['out_type'] == 'csv':
-            print cgi.escape("#" + ", ".join(["=".join([key, str(val)]) for key, val in print_args.items()]),
-                             ", ".join(["=".join([key, str(val)]) for key, val in xheader.items()]))
+            print(cgi.escape("#" + ", ".join(["=".join([key, str(val)]) for key, val in print_args.items()]),
+                             ", ".join(["=".join([key, str(val)]) for key, val in xheader.items()])))
             if self.args['stats']:
                 csvwriter = csv.DictWriter(sys.stdout, fieldnames=data[0].keys() + ['rowid'])
-                print ",".join(data[0].keys() + ['rowid'])
+                print(",".join(data[0].keys() + ['rowid']))
             else:
                 csvwriter = csv.DictWriter(sys.stdout, fieldnames=self.valid_silk_args + ['rowid'])
-                print ",".join(self.valid_silk_args + ['rowid'])
+                print(",".join(self.valid_silk_args + ['rowid']))
             for xdata in data:
                 csvwriter.writerow(xdata)
 
