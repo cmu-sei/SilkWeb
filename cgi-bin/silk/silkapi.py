@@ -124,7 +124,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 __appname__ = 'SilkAPI'
-__version__ = "1.80"
+__version__ = "1.81"
 
 import sys, re, silk, json, types, cgi, os, datetime, getopt, logging, imp, argparse, csv, warnings
 from xml.etree.ElementTree import Element, tostring
