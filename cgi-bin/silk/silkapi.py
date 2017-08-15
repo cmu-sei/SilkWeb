@@ -129,8 +129,9 @@ __version__ = "1.80"
 import sys, re, silk, json, types, cgi, os, datetime, getopt, logging, imp, argparse, csv, warnings
 from xml.etree.ElementTree import Element, tostring
 
-try:
-    isinstance(1,long)
+
+try: # for python 3 compatibility check
+    isinstance(1, long)
 except:
     long=int 
 
@@ -255,6 +256,17 @@ def getformvalue(form, v):
 def total_seconds(td): #  For those not having python 2.7
     return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / (10**6*1.0)
 
+def get_site_config(): # Just send site configuration data back enumerating conditions
+    site_config = {"classes": {}, "sensors": list(silk.site.sensors()), "default_class": silk.site.default_class()}
+    for ctype in silk.site.classtypes():
+        mclass = ctype[0]
+        mtype = ctype[1]
+        if not mclass in site_config["classes"]: #initiate a classes dict with "types" empty array and related sensors, default class
+            site_config["classes"][mclass] = { "types" :[], "sensors" : list(silk.site.class_sensors(mclass)),
+                                               "default_class" :list(silk.site.default_types(mclass))}
+        site_config["classes"][mclass]["types"].append(mtype)
+    return site_config
+
 
 class SilkAPI:
     """
@@ -308,7 +320,7 @@ class SilkAPI:
         self.logger.debug("lambda: {0}".format(self.silk_lambda_functions))
         self.logger.debug("args: {0}".format(self.args))
         if os.environ.get("SILK_DATA_ROOTDIR", None):
-            self.silkconf = os.environ["SILK_DATA_ROOTDIR"] + "silk.conf"
+            self.silkconf = os.environ["SILK_DATA_ROOTDIR"] + os.path.sep + "silk.conf"
         if os.environ.get("SILK_CONFIG_FILE", None): #override when SILK_CONFIG_FILE is also present
             self.silkconf = os.environ["SILK_CONFIG_FILE"]
 
@@ -384,11 +396,15 @@ class SilkAPI:
                     self.query_arguments[v] = cform[v]
                 else:
                     self.extra_silk_args[v] = cform[v]
-
+        if "site_config" in self.extra_silk_args:
+            print(json.dumps(get_site_config()))
+            sys.exit(0)
         # Updates types if classname is specified and types is NOT specified
         if self.default_silk_args['classname'] != str(silk.site.default_class()):
             if self.default_silk_args['types'] == silk.site.default_types(silk.site.default_class()):
                 self.default_silk_args['types'] = silk.site.default_types(self.default_silk_args['classname'])
+            if self.default_silk_args['sensors'] == silk.site.class_sensors(silk.site.default_class()):
+                self.default_silk_args['sensors'] = silk.site.class_sensors(self.default_silk_args['classname'])
 
         # Remap legacy arguments 
         for legacy in ["start_date", "end_date"]:
