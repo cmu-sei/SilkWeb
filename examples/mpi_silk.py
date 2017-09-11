@@ -14,7 +14,7 @@ f_start = a.istart
 f_end = a.iend
 each = (f_end-f_start)/nprocs
 for node in range(nprocs):
-    if node == rank:
+    if node == rank-1:
         a.istart = f_start + node*each
         a.iend = a.istart + each
         if node == nprocs:

@@ -456,6 +456,7 @@ class SilkAPI:
                         "Fields given for stats is not valid should be one of the silk columns, invalid field is : " +
                         field)
         self.rows_searched=0
+        self.default_iter=silk.site.repository_iter
 
     @staticmethod
     def return_valid_silk_args():
@@ -593,6 +594,8 @@ class SilkAPI:
             results.append(record)
             row += 1
         self.stats_totals["length"]=len(results) # we know the end of this stats
+        if self.iend > len(results) - 1:
+            self.iend = len(results) - 1
         return results[self.istart:self.iend]
 
     def stats_query(self):
@@ -600,7 +603,7 @@ class SilkAPI:
         Method executes a silk query that returns stats (rwfilter | rwstats)
         :returns: dictionary containing results
         """
-        for filename in silk.site.repository_iter(**self.default_silk_args):
+        for filename in self.default_iter(**self.default_silk_args):
             for rec in silk.silkfile_open(filename, silk.READ):
                 self.rows_searched += 1
                 if self.check_condition(rec):
@@ -619,7 +622,7 @@ class SilkAPI:
 
         row = 0
         results = []
-        for filename in silk.site.repository_iter(**self.default_silk_args):
+        for filename in self.default_iter(**self.default_silk_args):
             for rec in silk.silkfile_open(filename, silk.READ):
                 self.rows_searched += 1
                 if self.check_condition(rec):
