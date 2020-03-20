@@ -1,4 +1,4 @@
-# silkweb
+# silkweb - include SBOM SWID tags format
 A web services API for SiLK tools
 The intent of this silkweb API service is to enable a simplified JSON/XML/CSV exporter that will
 use minimal python libraries and Python Silk libraries https://tools.netsa.cert.org/silk/pysilk.html to
