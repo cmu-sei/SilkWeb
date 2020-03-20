@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SoftwareIdentity name="silkweb" tagId="Ubuntu_18.04-x86_64-silkweb-1.81"
+		  version="1.81" versionScheme="alphanumeric"
+		  xml:lang="en-US" xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns:n8060="http://csrc.nist.gov/ns/swid/2015-extensions/1.0"
+		  xmlns:sha256="http://www.w3.org/2001/04/xmlenc#sha256" 
+		  xmlns:n8060="http://csrc.nist.gov/ns/swid/2015-extensions/1.0">
+  <Entity name="Software Engineering Institute"
+	  regid="sei.cmu.edu" role="tagCreator softwareCreator aggregator"/>
+  <Link rel="license" href="file://LICENSE" />
+  <Meta product="SilkWeb" colloquialVersion="1.81" revision="1" arch="noarch"
+	summary="Silkweb API Silk Tools"/>
+  <Payload n8060:pathSeparator="/" n8060:envVarPrefix="$" n8060:envVarSuffix="">
+    <File size="7630" name="LICENSE" 
+	  location="LICENSE" n8060:mutable="true" key="true"
+	  sha256:hash="3eb67d2432b51392e67971db617c4c61e015fbbcdf380de8dc29e1d2fe8abf26"/>
+    <File size="338" name="silkwebconf.py" 
+	  location="etc/silkweb/silkwebconf.py" n8060:mutable="true" key="true"
+	  sha256:hash="6dacdd0931c3abdeca2991825bb684c71a9580797072e6da82179144c9cc05ca"/>
+    <File size="342" name="silkweb.conf" 
+	  location="etc/apache2/conf-available/silkweb.conf" n8060:mutable="true" key="true"
+	  sha256:hash="183ddde6fc395d04ebeaaa643f7a1ccf25181217cf9f9505a7b1452e176ccf15"/>
+    <File size="342" name="silkweb.conf" 
+	  location="etc/httpd/conf.d/silkweb.conf" n8060:mutable="true" key="true"
+	  sha256:hash="183ddde6fc395d04ebeaaa643f7a1ccf25181217cf9f9505a7b1452e176ccf15"/>
+    <File size="114060" name="bootstrap.min.css" 
+	  location="html/silk/bootstrap.min.css" n8060:mutable="true" key="true"
+	  sha256:hash="f5ab868bb430ce181bd2775defffa0e4d7be41446f5dd052f3f8eb92c4370c8a"/>
+    <File size="84670" name="bootstrap-table.js" 
+	  location="html/silk/bootstrap-table.js" n8060:mutable="true" key="true"
+	  sha256:hash="9e97c51d48dc28662effba581e0aaf274078b9d53000e6633ff211c16ef3f773"/>
+    <File size="151125" name="d3.min.js" 
+	  location="html/silk/d3.min.js" n8060:mutable="true" key="true"
+	  sha256:hash="c641285840b6477b0e5da33c8e768a4f8de0ba80b24db92218016b6ad8fdc754"/>
+    <File size="33805" name="index.html" 
+	  location="html/silk/index.html" n8060:mutable="true" key="true"
+	  sha256:hash="342b4e741c17b49928ae58d05fbc3709c3ed0a2b0ab5a26da18a61464b6d3d11"/>
+    <File size="6635" name="bootstrap-table.css" 
+	  location="html/silk/bootstrap-table.css" n8060:mutable="true" key="true"
+	  sha256:hash="8435945af804f390de8e1d7c83bd21a145c8d5e1869e3708a0ad2821534d0b30"/>
+    <File size="5577" name="datepickr.min.js" 
+	  location="html/silk/datepickr.min.js" n8060:mutable="true" key="true"
+	  sha256:hash="7c30afd366bef9b5d783e7d78f072177d61e638bb88b91a1e2a7f972d6f562f0"/>
+    <File size="96380" name="jquery.min.js" 
+	  location="html/silk/jquery.min.js" n8060:mutable="true" key="true"
+	  sha256:hash="2e945ebcd9b955e7c543ba4ad41e8f7779a077b482a0207db74bd6ded2021d17"/>
+    <File size="35558" name="bootstrap.min.js" 
+	  location="html/silk/bootstrap.min.js" n8060:mutable="true" key="true"
+	  sha256:hash="5d51d5f4bc972e7d7c48d17fb92c191b55bd1be71533c12ef39fea6365156be0"/>
+    <File size="151732" name="d3.v3.min.js" 
+	  location="html/silk/d3.v3.min.js" n8060:mutable="true" key="true"
+	  sha256:hash="b81e673dc58af2faf97bcdec9eab4c5182769ffe536773d5f42091935a73a1be"/>
+    <File size="2820" name="tablesorter.css" 
+	  location="html/silk/tablesorter.css" n8060:mutable="true" key="true"
+	  sha256:hash="eb7ac5d1adf6ce02347c2095257fe9d1840c8dfeb71e0e27dcf7588526c13019"/>
+    <File size="4782" name="loading1.gif" 
+	  location="html/silk/loading1.gif" n8060:mutable="true" key="true"
+	  sha256:hash="a07d1cebd390b2820257e108c20a012950126fbe4178a3a10efe3a1b217044ce"/>
+    <File size="14201" name="entity.html" 
+	  location="html/silk/entity.html" n8060:mutable="true" key="true"
+	  sha256:hash="f4ced495940d6b46ef6293a7e6c0bdf0b09b29ad4e6985dc307a0edb2f9e7f3c"/>
+    <File size="23320" name="glyphicons-halflings-regular.woff" 
+	  location="html/silk/fonts/glyphicons-halflings-regular.woff" n8060:mutable="true" key="true"
+	  sha256:hash="fc969dc1c6ff531abcf368089dcbaf5775133b0626ff56b52301a059fc0f9e1e"/>
+    <File size="20335" name="glyphicons-halflings-regular.eot" 
+	  location="html/silk/fonts/glyphicons-halflings-regular.eot" n8060:mutable="true" key="true"
+	  sha256:hash="f495f34e4f177cf0115af995bbbfeb3fcabc88502876e76fc51a4ab439bc8431"/>
+    <File size="41280" name="glyphicons-halflings-regular.ttf" 
+	  location="html/silk/fonts/glyphicons-halflings-regular.ttf" n8060:mutable="true" key="true"
+	  sha256:hash="bd18efd3efd70fec8ad09611a20cdbf99440b2c1d40085c29be036f891d65358"/>
+    <File size="62926" name="glyphicons-halflings-regular.svg" 
+	  location="html/silk/fonts/glyphicons-halflings-regular.svg" n8060:mutable="true" key="true"
+	  sha256:hash="5d234508037dc13a419ef6ce48f3fc73dbb477f1a162c052b872182b494e626e"/>
+    <File size="4763" name="silkweb_swid.xml" 
+	  location="silkweb_swid.xml" n8060:mutable="true" key="true"
+	  sha256:hash="9da52655d5ecf8c7648a3aff84b4be2f3cd85bdc3ccd877f9b399398070b7aa0"/>
+    <File size="10911" name="README.md" 
+	  location="README.md" n8060:mutable="true" key="true"
+	  sha256:hash="c0d7b2bd5ef8e36e8f3d66e7033eee124afda5da85183388937dd5825a48c41c"/>
+    <File size="1101" name="silkhandler.py" 
+	  location="examples/silkhandler.py" n8060:mutable="true" key="true"
+	  sha256:hash="d6fe9a92de00b6110455f7d15a2f654b5b0b6eefa4f19d27d6f54805f17fe482"/>
+    <File size="1164" name="fcgi-test.py" 
+	  location="examples/fcgi-test.py" n8060:mutable="true" key="true"
+	  sha256:hash="234438bdb3304df5ff2ff3b3646e3f79903356200031256048014f80f5fcad61"/>
+    <File size="384" name="README.txt" 
+	  location="examples/README.txt" n8060:mutable="true" key="true"
+	  sha256:hash="46d6eb45735dc0cf651ac80cf851aa42ee309ff547321e959363a5afc02931d9"/>
+    <File size="618" name="mpi_silk.py" 
+	  location="examples/mpi_silk.py" n8060:mutable="true" key="true"
+	  sha256:hash="2c30dd707587c6a6475fa8fc5e2431c4fab7a598893ffb7779f5f6a04c16b5c0"/>
+    <File size="845" name="silkweb-client.py" 
+	  location="examples/silkweb-client.py" n8060:mutable="true" key="true"
+	  sha256:hash="83935b6a7f1e97bca84ec188bde528e90c7bfe5bc1ccd4dce5ace0af934b6ba4"/>
+    <File size="35400" name="silkapi.py" 
+	  location="cgi-bin/silk/silkapi.py" n8060:mutable="true" key="true"
+	  sha256:hash="ce510fcf9df494d4b12a7ef78416e24dd4d6de1004acd53612ea229536649968"/>
+  </Payload>
+</SoftwareIdentity>
+
